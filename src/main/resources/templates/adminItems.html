@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Items crud panel</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" th:href="@{/style/bootstrap.min.css}">
+
+    <!-- jQuery library -->
+    <script th:src="@{/js/lib/jquery.min.js}" type="text/javascript"></script>
+
+    <!-- Popper JS -->
+    <script th:src="@{/js/lib/popper.min.js}" type="text/javascript"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script th:src="@{/js/lib/bootstrap.min.js}" type="text/javascript"></script>
+    <script th:src="@{/js/lib/common.js}" type="text/javascript"></script>
+    <script th:src="@{/js/clients/itemClient.js}" type="text/javascript"></script>
+    <script th:src="@{/js/clients/propertyClient.js}" type="text/javascript"></script>
+    <script th:src="@{/js/admin/items.js}" type="text/javascript"></script>
+    <script>
+        let currentPage = "adminItems";
+        let currentPageText = "Admin Items page";
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var isAuthenticated = /*[[${auth}]]*/ 'false';
+        console.log("isAuthenticated = " + isAuthenticated);
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+<div th:include="/navbar.html">
+
+</div>
+
+<div class="container">
+    <div id="main" class="jumbotron m-2 p-2">
+        <div class="badge badge-danger" th:if="${error}" th:text="${error}"></div>
+        <div class="badge badge-info" th:if="${msg}" th:text="${msg}"></div>
+        <a class="nav-link" th:if="${item != null}" th:href="@{/admin/item}">Back</a>
+        <a class="nav-link" th:if="${item == null}" th:href="@{/admin}">Back</a>
+
+        <div id="messageBox">
+
+        </div>
+
+        <div th:if="${item != null && itemTypes != null}">
+            <h2>Item edit form</h2>
+            <form class="col-sm-10 form-horizontal" th:action="@{/admin/item/{id}(id=${item.id})}"
+                  th:method="PUT">
+                <input type="hidden" id="itemId" th:value="${item.id}">
+                <div class="form-group">
+                    <label for="nameEdit" class="col-sm-10 control-label">Item name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="nameEdit" name="name"
+                               th:value="${item.name}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="descriptionEdit" class="col-sm-10 control-label">Item description</label>
+                    <div class="col-sm-10">
+                        <textarea class="form-control" id="descriptionEdit" rows="6" name="description"
+                                  th:text="${item.description}"></textarea>
+                    </div>
+                </div>
+                <div id="itemQuantity" style="display: none;" class="form-group">
+                    <div class="col-sm-10">
+                        <label for="quantity" class="control-label">New quantity</label>
+                        <input type="number" id="quantity" name="quantity" th:value="${-1}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <label for="changeItemType" class="control-label" th:text="${'Change item type, current: ' + item.itemType.name}" ></label>
+                        <input type="checkbox" id="changeItemType" name="changeItemType" onchange="onChangeItemType()">
+                    </div>
+                </div>
+                <div class="form-group" id="itemTypeSelectionDiv">
+                    <div class="col-sm-10">
+                        <label class="control-label" for="itemTypeId">Choose item type for this item:</label>
+                        <select class="form-control" id="itemTypeId" name="itemTypeId">
+                            <option th:text="${item.itemType.itemTypeId + ' (' + item.itemType.name + ')'}"
+                                    th:value="${item.itemType.itemTypeId}"></option>
+                            <div th:each="type : ${itemTypes}">
+                                <div th:if="${type.itemTypeId != item.itemType.itemTypeId}">
+                                    <option th:text="${type.itemTypeId + ' (' + type.name + ')'}"
+                                            th:value="${type.itemTypeId}"></option>
+                                </div>
+                            </div>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="currentPrice" class="col-sm-10 control-label">Price</label>
+                    <div class="col-sm-10" id="currentPrice">
+                        <a th:if="${item.price != null}"
+                           th:href="@{/admin/price/{id}(id=${item.price.id})}"
+                           th:text="${'Current price: ' + item.price.priceFormatted + ', price ID = ' + item.price.id}"></a>
+                        <p th:if="${item.price == null}">Price not defined</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="'Confirm'"></button>
+                </div>
+            </form>
+            <h3>Item removal form</h3>
+            <form class="col-sm-10 form-horizontal" th:action="@{/admin/item/{id}(id=${item.id})}"
+                  th:method="DELETE">
+                <div class="form-group">
+                    <button type="submit" class="btn btn-danger"
+                            th:text="'Delete item'"></button>
+                </div>
+            </form>
+            <h3>Properties</h3>
+            <table class="table">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Property ID</th>
+                    <th>Property name</th>
+                    <th>Property value ID</th>
+                    <th>Property value</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody id="associatedPropertiesTbody">
+
+                </tbody>
+            </table>
+        </div>
+
+
+        <div th:if="${itemPage != null}">
+            <div class="col-sm-10 form-horizontal">
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <a class="btn btn-secondary" th:href="@{/api/v1/items/json}">Export items</a>
+                    </div>
+                </div>
+            </div>
+
+            <form id="uploadFile"
+                  class="col-sm-10 form-horizontal"
+                  enctype="multipart/form-data">
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <label for="file" class="control-label">File:</label>
+                        <input id="file" type="file" class="form-control-file" name="file">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <ul id="uploadResult">
+                        </ul>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Import</button>
+            </form>
+
+            <h2 class="col-sm-10">Item search form</h2>
+            <form class="col-sm-10 form-horizontal" th:action="@{/admin/item}"
+                  th:method="GET">
+                <div class="form-group">
+                    <label for="itemSearchId" class="col-sm-10 control-label">Item ID</label>
+                    <div class="col-sm-10">
+                        <input type="number" class="form-control" id="itemSearchId" name="id">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="'Find item by ID'"></button>
+                </div>
+            </form>
+            <h2 class="col-sm-10">Item creation form</h2>
+            <form class="col-sm-10 form-horizontal" th:action="@{/admin/item}"
+                  th:method="POST">
+                <div class="form-group">
+                    <label for="name" class="col-sm-10 control-label">Item name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="name" name="itemName">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="description" class="col-sm-10 control-label">Description</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="description" name="description">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <label class="control-label" for="itemTypeSelectionOnCreate">Choose item type:</label>
+                        <select class="form-control" id="itemTypeSelectionOnCreate" name="itemTypeId">
+                                <option th:each="type : ${itemTypes}"
+                                        th:text="${type.name}"
+                                        th:value="${type.itemTypeId}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="'Create item'"></button>
+                </div>
+            </form>
+            <div class="badge badge-info" th:if="${itemType != null}"
+                 th:text="'Showing items with type ' + ${itemType.name}"></div>
+            <form class="col-sm-10 form-horizontal"
+                  th:if="${itemTypes != null && itemTypes.size() > 0}"
+                  th:action="@{/admin/item(size=${itemPage.size},page=${itemPage.number + 1})}"
+                  th:method="get">
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <label class="control-label" for="itemTypeSelection">Choose item type:</label>
+                        <select class="form-control" id="itemTypeSelection" name="itemTypeId">
+                            <option th:each="item : ${itemTypes}" th:text="${item.name}"
+                                    th:value="${item.itemTypeId}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="btn btn-primary" value="Filter by item type">
+                </div>
+            </form>
+
+            <div th:if="${itemPage.content.size >= 10 && itemPage.totalPages > 1}">
+                <h4>Page</h4>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <li class="page-item"
+                            th:each="pageNumber : ${pageNumbers}">
+                            <a th:href="@{/admin/item(size=${itemPage.size}, page=${pageNumber})}"
+                               th:text="${pageNumber}"
+                               th:class="${pageNumber==itemPage.number + 1} ? 'bg-light page-link' : 'page-link'"></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div th:if="${itemPage.content.size == 0}">
+                <h2 class="alert-info">There are no items.</h2>
+            </div>
+
+            <table th:if="${itemPage.content.size > 0}" class="table">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Item type</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${itemPage.content}">
+                    <td><a th:href="@{/admin/item/{id}(id=${item.id})}"
+                           th:text="${item.name} + ' (' + ${item.id} + ')'"></a></td>
+                    <td>
+                        <a th:href="@{/admin/item_type/{id}(id=${item.itemType.itemTypeId})}"
+                           th:text="${item.itemType.name}"></a>
+                    </td>
+                    <td>
+                        <a th:href="@{/admin/category/{id}(id=${item.itemType.category.id})}"
+                           th:text="${item.itemType.category.name}"></a>
+                    </td>
+                    <td th:if="${item.price != null}">
+                        <p style="display: inline"
+                           th:text="${item.price.getPriceFormatted()}"></p>
+                        <span class='fas fa-dollar-sign'></span>
+                    </td>
+                    <td th:if="${item.price == null}">Price is not defined</td>
+                </tr>
+                </tbody>
+            </table>
+            <div th:if="${itemPage.totalPages > 1}">
+                <h4>Page</h4>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <li class="page-item"
+                            th:each="pageNumber : ${pageNumbers}">
+                            <a th:if="${itemType == null}"
+                               th:href="@{/admin/item(size=${itemPage.size}, page=${pageNumber})}"
+                               th:text="${pageNumber}"
+                               th:class="${pageNumber==itemPage.number + 1} ? 'bg-light page-link' : 'page-link'"></a>
+                            <a th:if="${itemType != null}"
+                               th:href="@{/admin/item(size=${itemPage.size}, page=${pageNumber}, itemTypeId=${itemType.itemTypeId})}"
+                               th:text="${pageNumber}"
+                               th:class="${pageNumber==itemPage.number + 1} ? 'bg-light page-link' : 'page-link'"></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div th:include="/footer.html"></div>
+
+</body>
+</html>

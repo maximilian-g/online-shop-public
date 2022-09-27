@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" th:href="@{/style/bootstrap.min.css}">
+
+    <!-- jQuery library -->
+    <script th:src="@{/js/lib/jquery.min.js}" type="text/javascript"></script>
+
+    <!-- Popper JS -->
+    <script th:src="@{/js/lib/popper.min.js}" type="text/javascript"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script th:src="@{/js/lib/bootstrap.min.js}" type="text/javascript"></script>
+    <title>Access denied</title>
+    <script>
+        let currentPage = "access_denied";
+        let currentPageText = "Error page";
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var isAuthenticated = /*[[${auth}]]*/ 'false';
+        console.log("isAuthenticated = " + isAuthenticated);
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+<div th:include="/navbar.html">
+
+</div>
+<div class="container">
+    <div id="main" class="jumbotron m-3 p-3">
+
+        <h2>Something went wrong...</h2>
+        <br>
+        <p class="text-center font-weight-bolder">Looks like you tried to get access to protected resource.</p>
+        <img class="rounded mx-auto d-block" th:src="@{/images/access_denied.jpg}" th:width="350" th:height="250" alt="Access denied">
+
+    </div>
+</div>
+
+<div th:include="/footer.html"></div>
+
+</body>
+</html>

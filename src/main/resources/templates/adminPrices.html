@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Prices crud panel</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" th:href="@{/style/bootstrap.min.css}">
+
+    <!-- jQuery library -->
+    <script th:src="@{/js/lib/jquery.min.js}" type="text/javascript"></script>
+
+    <!-- Popper JS -->
+    <script th:src="@{/js/lib/popper.min.js}" type="text/javascript"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script th:src="@{/js/lib/bootstrap.min.js}" type="text/javascript"></script>
+    <script>
+        let currentPage = "adminPrices";
+        let currentPageText = "Admin Prices page";
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var isAuthenticated = /*[[${auth}]]*/ 'false';
+        console.log("isAuthenticated = " + isAuthenticated);
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+<div th:include="/navbar.html">
+
+</div>
+
+<div class="container">
+    <div id="main" class="jumbotron m-2 p-2">
+        <div class="badge badge-danger" th:if="${error}" th:text="${error}"></div>
+        <div class="badge badge-info" th:if="${msg}" th:text="${msg}"></div>
+        <a class="nav-link" th:if="${price != null}" th:href="@{/admin/price}">Back</a>
+        <a class="nav-link" th:if="${price == null}" th:href="@{/admin}">Back</a>
+
+        <div th:if="${price != null && items != null}">
+            <h2>Price edit form</h2>
+            <form class="col-sm-10 form-horizontal" th:action="@{/admin/price/{id}(id=${price.id})}"
+                  th:method="PUT">
+                <div class="form-group">
+                    <label for="startDateEdit" class="col-sm-10 control-label">Price start date (yyyy-MM-dd)</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="startDateEdit" name="startDate"
+                               th:value="${price.getFormattedStartDate()}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="endDateEdit" class="col-sm-10 control-label">Price end date (yyyy-MM-dd)</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="endDateEdit" name="endDate"
+                               th:value="${price.getFormattedEndDate()}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="priceEdit" class="col-sm-10 control-label">Price</label>
+                    <div class="col-sm-10">
+                        <input type="number" step=".01" class="form-control" id="priceEdit" name="price"
+                               th:value="${price.price}">
+                    </div>
+                </div>
+                <div th:if="${price.itemId != null}" class="form-group">
+                    <label for="itemName" class="col-sm-10 control-label">Current item</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="itemName" disabled
+                               th:value="${price.itemId + ' (' + price.itemName + ')'}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <input type="checkbox"
+                               id="reassign" name="reassign">Change assigned item</input>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-10 control-label" for="itemId">Choose item for this price:</label>
+                    <div class="col-sm-10">
+                        <select class="form-control" id="itemId" name="itemId">
+                            <div th:each="item : ${items}">
+                                <option th:text="${item.id + ' (' + item.name + ')'}"
+                                        th:value="${item.id}"></option>
+                            </div>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="'Confirm'"></button>
+                </div>
+            </form>
+            <h3>Price unassignment form</h3>
+            <form class="col-sm-10 form-horizontal" th:action="@{/admin/price/{id}(id=${price.id})}"
+                  th:method="PATCH">
+                <div class="form-group">
+                    <button type="submit" class="btn btn-secondary"
+                            th:text="'Unassign price from item'"></button>
+                </div>
+            </form>
+            <h3>Delete form</h3>
+            <form class="col-sm-10 form-horizontal" th:action="@{/admin/price/{id}(id=${price.id})}"
+                  th:method="DELETE">
+                <div class="form-group">
+                    <button type="submit" class="btn btn-danger"
+                            th:text="'Delete price'"></button>
+                </div>
+            </form>
+        </div>
+
+        <div th:if="${pricePage != null}">
+            <h2>Price search form</h2>
+            <form class="col-sm-10 form-horizontal" th:action="@{/admin/price}"
+                  th:method="GET">
+                <div class="form-group">
+                    <label for="priceId" class="col-sm-10 control-label">Price ID</label>
+                    <div class="col-sm-10">
+                        <input type="number" class="form-control" id="priceId" name="id">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="'Search'"></button>
+                </div>
+            </form>
+            <h2>Price creation form</h2>
+            <form class="col-sm-10 form-horizontal" th:action="@{/admin/price}"
+                  th:method="POST">
+                <div class="form-group">
+                    <label for="startDate" class="col-sm-10 control-label">Price start date</label>
+                    <div class="col-sm-10">
+                        <input type="date" class="form-control" id="startDate" name="startDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="endDate" class="col-sm-10 control-label">Price end date</label>
+                    <div class="col-sm-10">
+                        <input type="date" class="form-control" id="endDate" name="endDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-10">
+                        <input type="checkbox"
+                               id="openInterval" name="openInterval">Open interval</input>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="price" class="col-sm-10 control-label">Price</label>
+                    <div class="col-sm-10">
+                        <input type="number" step=".01" class="form-control" id="price" name="price"
+                               placeholder="Enter price">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="'Create price'"></button>
+                </div>
+            </form>
+            <div th:if="${pricePage.content.size() > 0}">
+                <div th:if="${pricePage != null && pricePage.content.size > 10 && pricePage.totalPages > 1}">
+                    <h4>Page</h4>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            <li class="page-item"
+                                th:each="pageNumber : ${pageNumbers}">
+                                <a th:href="@{/admin/price(size=${pricePage.size}, page=${pageNumber})}"
+                                   th:text="${pageNumber}"
+                                   th:class="${pageNumber==pricePage.number + 1} ? 'bg-light page-link' : 'page-link'"></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <h2 class="text-center mb-2">Price table</h2>
+                <table class="table">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Price start date (yyyy-MM-dd)</th>
+                        <th>Price end date (yyyy-MM-dd)</th>
+                        <th>Price</th>
+                        <th>Item ID</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${pricePage.content}">
+                        <td>
+                            <a th:href="@{/admin/price/{id}(id=${item.id})}"
+                               th:text="${item.id}">
+                            </a>
+                        </td>
+                        <td th:text="${item.getFormattedStartDate()}"></td>
+                        <td th:if="${item.endDate != null}" th:text="${item.getFormattedEndDate()}"></td>
+                        <td th:if="${item.endDate == null}" th:text="'Open interval'"></td>
+                        <td th:text="${item.priceFormatted}"></td>
+                        <td th:if="${item.itemId != null}">
+                            <a th:href="@{/admin/item/{id}(id=${item.itemId})}"
+                               th:text="${item.itemId + ' (' + item.itemName + ')'}">
+                            </a>
+                        </td>
+                        <td th:if="${item.itemId == null}" th:text="${'Not assigned to item'}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div th:if="${pricePage != null && pricePage.totalPages > 1}">
+                    <h4>Page</h4>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            <li class="page-item"
+                                th:each="pageNumber : ${pageNumbers}">
+                                <a th:href="@{/admin/price(size=${pricePage.size}, page=${pageNumber})}"
+                                   th:text="${pageNumber}"
+                                   th:class="${pageNumber==pricePage.number + 1} ? 'bg-light page-link' : 'page-link'"></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div th:include="/footer.html"></div>
+
+</body>
+</html>

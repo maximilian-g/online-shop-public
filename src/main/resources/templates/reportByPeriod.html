@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Report page</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" th:href="@{/style/bootstrap.min.css}">
+
+    <!-- jQuery library -->
+    <script th:src="@{/js/lib/jquery.min.js}" type="text/javascript"></script>
+
+    <!-- Popper JS -->
+    <script th:src="@{/js/lib/popper.min.js}" type="text/javascript"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script th:src="@{/js/lib/bootstrap.min.js}" type="text/javascript"></script>
+    <script th:src="@{/js/lib/common.js}" type="text/javascript"></script>
+    <script>
+        let currentPage = "report";
+        let currentPageText = "Report page";
+        $(document).ready(function() {
+
+            let monthStartDate = new Date();
+            monthStartDate.setMinutes(0);
+            monthStartDate.setHours(0);
+            monthStartDate.setSeconds(0);
+            monthStartDate.setMilliseconds(0);
+            monthStartDate.setDate(1);
+
+            let monthEndDate = new Date();
+            monthEndDate.setHours(23);
+            monthEndDate.setMinutes(59);
+            monthEndDate.setSeconds(59);
+            monthEndDate.setMilliseconds(999);
+            let daysInMonth = getMonthDays()[monthEndDate.getMonth()];
+            // february case
+            if(monthEndDate.getMonth() === 1 && isLeapYear(monthEndDate.getFullYear())) {
+                daysInMonth++;
+            }
+            monthEndDate.setDate(daysInMonth);
+
+            $("#startDate").val(getDateTimeString(monthStartDate));
+            $("#endDate").val(getDateTimeString(monthEndDate));
+        });
+
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var isAuthenticated = /*[[${auth}]]*/ 'false';
+        console.log("isAuthenticated = " + isAuthenticated);
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+<div th:include="/navbar.html">
+
+</div>
+<div class="container">
+    <div id="main" class="jumbotron my-3 p-3">
+        <a class="nav-link" th:href="@{/reports}">Back</a>
+
+        <form class="form-horizontal"
+              id="reportForm"
+              th:action="@{'/reports/' + ${reportName}}"
+              method="get">
+            <h2>Enter report parameters</h2>
+            <div class="form-group">
+                <label for="startDate" class="col-sm-2 control-label">Start date</label>
+                <div class="col-sm-10">
+
+                    <input type="text" placeholder="yyyy-MM-dd HH:mm:ss" class="form-control" id="startDate" name="startDate">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="endDate" class="col-sm-2 control-label">End date</label>
+                <div class="col-sm-10">
+                    <input type="text" placeholder="yyyy-MM-dd HH:mm:ss" class="form-control" id="endDate" name="endDate">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-primary">Get report</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:include="/footer.html"></div>
+
+</body>
+</html>

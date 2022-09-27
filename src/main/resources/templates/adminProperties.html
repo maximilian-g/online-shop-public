@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Properties crud panel</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" th:href="@{/style/bootstrap.min.css}">
+
+    <!-- jQuery library -->
+    <script th:src="@{/js/lib/jquery.min.js}" type="text/javascript"></script>
+
+    <!-- Popper JS -->
+    <script th:src="@{/js/lib/popper.min.js}" type="text/javascript"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script th:src="@{/js/lib/bootstrap.min.js}" type="text/javascript"></script>
+    <script th:src="@{/js/clients/itemTypeClient.js}" type="text/javascript"></script>
+    <script th:src="@{/js/clients/propertyClient.js}" type="text/javascript"></script>
+    <script th:src="@{/js/clients/itemClient.js}" type="text/javascript"></script>
+    <script th:src="@{/js/admin/properties.js}" type="text/javascript"></script>
+    <script>
+        let currentPage = "adminProperties";
+        let currentPageText = "Admin properties page";
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var isAuthenticated = /*[[${auth}]]*/ 'false';
+        console.log("isAuthenticated = " + isAuthenticated);
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+<div th:include="/navbar.html">
+
+</div>
+
+<div class="container">
+    <div id="main" class="jumbotron m-2 p-2">
+        <a class="nav-link" th:if="${property == null && propertyVal == null}" th:href="@{/admin}">Back</a>
+        <a class="nav-link" th:if="${property != null}" th:href="@{/admin/property}">Back</a>
+        <a class="nav-link" th:if="${propertyVal != null}"
+           th:href="@{/admin/property/{id}(id=${propertyVal.propId})}">Back</a>
+
+        <div id="messageBox">
+
+        </div>
+
+        <div th:if="${property != null}"
+             id="updatePropForm"
+             class="col-sm-10 form-horizontal">
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <input id="currentItemTypeId" type="hidden" th:value="${property.itemTypeId}">
+                    <label for="propertyId" class="control-label">Property ID:</label>
+                    <input id="propertyId" class="form-control" disabled name="propertyId" th:value="${property.id}">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <label for="propertyName" class="control-label">Property name:</label>
+                    <input id="propertyName" class="form-control" type="text" name="propertyName" th:value="${property.name}">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <label id="selectItemTypeLabel" class="control-label" for="itemTypeSelection"></label>
+                    <select class="form-control" id="itemTypeSelection" name="itemTypeSelection">
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="updateProperty" onclick="onUpdateClick()">Update property</button>
+            <button type="button" class="btn btn-danger" id="deleteProperty" onclick="onDeleteClick()">Delete property</button>
+        </div>
+
+        <div th:if="${property != null}"
+             class="col-sm-10 mt-3 form-horizontal">
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <label for="newPropertyValue" class="control-label">New property value:</label>
+                    <input id="newPropertyValue" class="form-control" type="text" name="newPropertyValue">
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="createPropertyVal" onclick="onPropValCreate()">
+                Create property value
+            </button>
+        </div>
+
+        <div th:if="${property != null}">
+            <h2 th:if="${property.getPropertyValues() != null && !property.getPropertyValues().isEmpty()}">Property values</h2>
+            <table th:if="${property.getPropertyValues() != null && !property.getPropertyValues().isEmpty()}" class="table">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Property value ID</th>
+                    <th>Value</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="propVal : ${property.getPropertyValues()}">
+                    <td><a th:href="${'/admin/property/value/' + propVal.propValueId}"
+                           th:text="${propVal.propValueId}"></a></td>
+                    <td th:text="${propVal.value}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:if="${propertyVal != null}"
+             id="updatePropertyValForm"
+             class="col-sm-10 form-horizontal">
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <label for="propId" class="control-label">Property ID:</label>
+                    <input id="propId" disabled class="form-control" name="propId" th:value="${propertyVal.propId}">
+                </div>
+            </div>
+            <div class="form-group" id="propNameShow" style="display: none">
+                <div class="col-sm-10">
+                    <label for="propName" class="control-label">Property name:</label>
+                    <input id="propName" disabled class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <label for="propertyValId" class="control-label">Property value ID:</label>
+                    <input id="propertyValId" disabled class="form-control" name="propertyValId" th:value="${propertyVal.propValueId}">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <label for="propertyValue" class="control-label">Property value:</label>
+                    <input id="propertyValue" type="text" class="form-control" name="propertyValue"
+                           th:value="${propertyVal.value}">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <label id="selectPropertyLabel" class="control-label" for="propertySelection"></label>
+                    <select class="form-control" id="propertySelection" name="propertySelection">
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="updatePropVal" onclick="onUpdateValClick()">Update property value</button>
+            <button type="button" class="btn btn-danger" id="deletePropVal" onclick="onDeleteValClick()">Delete property value</button>
+        </div>
+
+        <div th:if="${propertyVal != null}"
+             class="col-sm-10 mt-3 form-horizontal">
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <label id="assignValToItemSelectLabel" class="control-label" for="propertySelection"></label>
+                    <select class="form-control" id="assignValToItemSelect" name="assignValToItemSelect">
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="assignValToItem" onclick="onAssignValClick()">
+                Add property to product
+            </button>
+        </div>
+
+        <div th:if="${propertyVal != null}" id="associatedItemsDiv">
+            <h2>Products that have this property</h2>
+            <table class="table">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Item ID</th>
+                    <th>Name</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody id="associatedItemsTbody">
+
+                </tbody>
+            </table>
+        </div>
+
+
+        <div th:if="${propertyPage != null}"
+             id="propertySearchForm"
+             class="col-sm-10 form-horizontal">
+            <h2>Property search form</h2>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <label for="propertySearchId" class="control-label">Property ID:</label>
+                    <input id="propertySearchId" class="form-control" type="number" name="propertySearchId">
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary"
+                    onclick="onSearchPropertyClick()"
+                    id="searchProperty">Search</button>
+        </div>
+        <br>
+
+        <div th:if="${propertyPage != null}"
+             id="createPropertyForm"
+             class="col-sm-10 form-horizontal">
+            <h2>Property creation form</h2>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <label for="propertyNameCreation" class="control-label">Property name:</label>
+                    <input id="propertyNameCreation" class="form-control" type="text" name="propertyNameCreation">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <label id="selectItemTypeLabelOnCreation" class="control-label" for="itemTypeSelectionOnCreation">Choose item type:</label>
+                    <select class="form-control" id="itemTypeSelectionOnCreation" name="itemTypeSelectionOnCreation">
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="createItemType" onclick="onCreateClick()">Create property</button>
+        </div>
+
+        <div th:if="${propertyPage != null && propertyPage.content.isEmpty()}">
+            <h2 class="alert-info">There are no properties.</h2>
+        </div>
+        <div th:if="${propertyPage != null && propertyPage.content.size > 10 && propertyPage.totalPages > 1}">
+            <h4>Page</h4>
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li class="page-item"
+                        th:each="pageNumber : ${pageNumbers}">
+                        <a th:href="@{/admin/property(size=${propertyPage.size}, page=${pageNumber})}"
+                           th:text="${pageNumber}"
+                           th:class="${pageNumber==propertyPage.number + 1} ? 'bg-light page-link' : 'page-link'"></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <br>
+        <h2 th:if="${propertyPage != null && !propertyPage.content.isEmpty()}">Properties</h2>
+        <table th:if="${propertyPage != null && !propertyPage.content.isEmpty()}" class="table">
+            <thead class="thead-dark">
+            <tr>
+                <th>Property ID</th>
+                <th>Property name</th>
+                <th>Item type ID</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="prop : ${propertyPage.content}">
+                <td><a th:href="${'/admin/property/' + prop.id}" th:text="${prop.id}"></a></td>
+                <td th:text="${prop.name}"></td>
+                <td><a th:href="${'/admin/item_type/' + prop.itemTypeId}" th:text="${prop.itemTypeId}"></a></td>
+            </tr>
+            </tbody>
+        </table>
+        <div th:if="${propertyPage != null && propertyPage.totalPages > 1}">
+            <h4>Page</h4>
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li class="page-item"
+                        th:each="pageNumber : ${pageNumbers}">
+                        <a th:href="@{/admin/property(size=${propertyPage.size}, page=${pageNumber})}"
+                           th:text="${pageNumber}"
+                           th:class="${pageNumber==propertyPage.number + 1} ? 'bg-light page-link' : 'page-link'"></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <br>
+    </div>
+
+</div>
+
+<div th:include="/footer.html"></div>
+
+</body>
+</html>

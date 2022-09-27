@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin panel</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" th:href="@{/style/bootstrap.min.css}">
+
+    <!-- jQuery library -->
+    <script th:src="@{/js/lib/jquery.min.js}" type="text/javascript"></script>
+
+    <!-- Popper JS -->
+    <script th:src="@{/js/lib/popper.min.js}" type="text/javascript"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script th:src="@{/js/lib/bootstrap.min.js}" type="text/javascript"></script>
+    <script>
+        let currentPage = "admin";
+        let currentPageText = "Admin page";
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var isAuthenticated = /*[[${auth}]]*/ 'false';
+        console.log("isAuthenticated = " + isAuthenticated);
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+<div th:include="/navbar.html">
+
+</div>
+
+<div class="container">
+    <div id="main" class="jumbotron m-2 p-2">
+        There are links to manage every entity.
+        <br>
+        <div class="btn-group btn-group-lg btn-group-justified d-flex mt-2" role="group" aria-label="Basic example">
+            <a class='m-3 p-2 btn btn-success' th:href='@{/operator}'>
+                Operator panel <span class='fas fa-edit'></span>
+            </a>
+            <a class='m-3 p-2 btn btn-secondary' th:href='@{/reports}'>
+                Reports <span class='fas fa-book'></span>
+            </a>
+        </div>
+
+        <div class="btn-group btn-group-lg btn-group-justified d-flex mb-2" role="group" aria-label="Basic example">
+            <a class="btn btn-primary" th:href="@{/admin/user}" id="user">
+                Users
+            </a>
+            <a class="btn btn-primary" th:href="@{/admin/item}" id="item">
+                Products
+            </a>
+            <a class="btn btn-primary" th:href="@{/admin/item_type}" id="itemType">
+                Product types
+            </a>
+            <a class="btn btn-primary" th:href="@{/admin/property}" id="property">
+                Product properties
+            </a>
+            <a class="btn btn-primary" th:href="@{/admin/price}" id="price">
+                Prices
+            </a>
+
+        </div>
+
+        <div class="btn-group btn-group-lg btn-group-justified d-flex mt-2" role="group" aria-label="Basic example">
+            <a class="btn btn-primary" th:href="@{/admin/category}" id="category">
+                Categories
+            </a>
+            <a class="btn btn-primary" th:href="@{/admin/address}" id="address">
+                Addresses
+            </a>
+            <a class="btn btn-primary" th:href="@{/admin/cart}" id="cart">
+                Cart
+            </a>
+            <a class="btn btn-primary" th:href="@{/admin/order}" id="order">
+                Orders
+            </a>
+            <a class="btn btn-primary" th:href="@{/admin/image}" id="image">
+                Product photos
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<div th:include="/footer.html"></div>
+
+</body>
+</html>

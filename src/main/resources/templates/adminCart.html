@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cart crud panel</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" th:href="@{/style/bootstrap.min.css}">
+
+    <!-- jQuery library -->
+    <script th:src="@{/js/lib/jquery.min.js}" type="text/javascript"></script>
+
+    <!-- Popper JS -->
+    <script th:src="@{/js/lib/popper.min.js}" type="text/javascript"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script th:src="@{/js/lib/bootstrap.min.js}" type="text/javascript"></script>
+    <script th:src="@{/js/admin/cart.js}" type="text/javascript"></script>
+    <script>
+        let currentPage = "adminCart";
+        let currentPageText = "Admin Cart page";
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var isAuthenticated = /*[[${auth}]]*/ 'false';
+        console.log("isAuthenticated = " + isAuthenticated);
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+<div th:include="/navbar.html">
+
+</div>
+
+<div class="container">
+    <div id="main" class="jumbotron m-2 p-2">
+        <div class="badge badge-danger" th:if="${error}" th:text="${error}"></div>
+        <div class="badge badge-info" th:if="${msg}" th:text="${msg}"></div>
+        <a class="nav-link" th:if="${cart != null}" th:href="@{/admin/cart}">Back</a>
+        <a class="nav-link" th:if="${cart == null}" th:href="@{/admin}">Back</a>
+
+        <div th:if="${cart != null}">
+            <h2>Clear cart form</h2>
+            <form class="col-sm-10 form-horizontal" th:action="@{/admin/cart/{id}(id=${cart.id})}"
+                  th:method="POST">
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="'Clear cart for user ' + ${cart.ownerUsername} + ' (' + ${cart.cartItems.size()} + ' items)'"></button>
+                </div>
+            </form>
+
+            <h3 th:if="${cart.cartItems.size > 0}">Items in cart</h3>
+            <table th:if="${cart.cartItems.size > 0}" class="table">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Item type</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="cartItem : ${cart.cartItems}">
+                        <td><a th:href="@{/admin/item/{id}(id=${cartItem.item.id})}"
+                               th:text="${cartItem.item.name}"></a></td>
+                        <td th:text="${cartItem.item.itemType.name}"></td>
+                        <td th:text="${cartItem.item.itemType.category.name}"></td>
+                        <td th:if="${cartItem.item.price != null}">
+                            <p style="display: inline"
+                               th:text="${cartItem.item.price.getPriceFormatted()}"></p>
+                            <span class='fas fa-dollar-sign'></span>
+                        </td>
+                        <td th:if="${cartItem.item.price == null}">Price is not defined</td>
+                        <td th:text="${cartItem.quantity}"></td>
+                        <td>
+                            <p style="display: inline"
+                               th:text="${cartItem.totalFormatted}"></p>
+                            <span class='fas fa-dollar-sign'></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+        <div th:if="${users != null}">
+            <h2>User search form</h2>
+            <div class="col-sm-10 form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-10 control-label" for="userSelection">Choose user whose cart you want to see:</label>
+                    <div class="col-sm-10">
+                        <select class="form-control" id="userSelection" name="id">
+                            <option th:each="user : ${users}"
+                                    th:text="${user.username} + ' (' + ${user.cart.cartItems.size()} + ' items)'"
+                                    th:value="${user.cart.id}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="button" id="searchButton" class="btn btn-primary">Show cart</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div th:include="/footer.html"></div>
+
+</body>
+</html>

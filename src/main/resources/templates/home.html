@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" th:href="@{/style/bootstrap.min.css}">
+
+    <!-- jQuery library -->
+    <script th:src="@{/js/lib/jquery.min.js}" type="text/javascript"></script>
+
+    <!-- Popper JS -->
+    <script th:src="@{/js/lib/popper.min.js}" type="text/javascript"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script th:src="@{/js/lib/bootstrap.min.js}" type="text/javascript"></script>
+    <script>
+        let currentPage = "home";
+        let currentPageText = "Home page";
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var isAuthenticated = /*[[${auth}]]*/ 'false';
+        console.log("isAuthenticated = " + isAuthenticated);
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+<div th:include="/navbar.html"></div>
+
+<div class="container" id="main">
+
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light">
+        <div class="col-md-5 mx-auto">
+            <h1 class="display-4 font-weight-normal">Welcome To <span>Online shop</span></h1>
+            <h2>About Us!</h2>
+            <p>Online shop is a Professional eCommerce Platform.
+                Here we will provide you only interesting content, which you will like very much.
+                We're dedicated to providing you the best of eCommerce,
+                with a focus on dependability and Product sales.
+                We're working to turn our passion for eCommerce into a booming online website.
+                We hope you enjoy our eCommerce as much as we enjoy offering them to you.
+            </p>
+            <p>Top frequently ordered items are presented below, feel free to explore the products catalog!</p>
+            <a class="btn btn-outline-secondary" href="/items">To catalog</a>
+        </div>
+<!--        <div class="product-device box-shadow d-none d-md-block __web-inspector-hide-shortcut__"></div>-->
+<!--        <div class="product-device product-device-2 box-shadow d-none d-md-block __web-inspector-hide-shortcut__"></div>-->
+    </div>
+
+    <div class="w-100 my-md-3 pl-md-3"
+         th:if="${topItems != null && topItems.size() > 0}"
+         th:each="item : ${topItems}">
+
+        <div class="bg-light mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
+            <div class="my-3 p-3">
+                <h2 class="display-5" th:text="${item.name}"></h2>
+                <p class="lead" th:text="${item.description}"></p>
+                <p class="lead mb-0"><a th:href="'/items/' + ${item.id}"
+                                        class="text-primary font-weight-bold">More...</a></p>
+            </div>
+            <div class="bg-white box-shadow mx-auto"
+                 style="width: 80%; height: 400px; border-radius: 21px 21px 0 0;">
+                <div th:if="${item.images.size() > 0}">
+                    <img style="width: 400px; height: 350px;"
+                         th:src="'/api/v1/images/' + ${item.images.get(0).imagePath}">
+                </div>
+                <div th:if="${item.images.size() == 0}">
+                    <img style="width: 400px; height: 350px;" src="/images/icon.png">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div th:include="/footer.html"></div>
+
+</body>
+</html>

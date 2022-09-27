@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Users crud panel</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" th:href="@{/style/bootstrap.min.css}">
+
+    <!-- jQuery library -->
+    <script th:src="@{/js/lib/jquery.min.js}" type="text/javascript"></script>
+
+    <!-- Popper JS -->
+    <script th:src="@{/js/lib/popper.min.js}" type="text/javascript"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script th:src="@{/js/lib/bootstrap.min.js}" type="text/javascript"></script>
+    <script th:src="@{/js/lib/common.js}" type="text/javascript"></script>
+    <script th:src="@{/js/admin/users.js}" type="text/javascript"></script>
+    <script>
+        let currentPage = "adminUsers";
+        let currentPageText = "Admin Users page";
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var isAuthenticated = /*[[${auth}]]*/ 'false';
+        console.log("isAuthenticated = " + isAuthenticated);
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+<div th:include="/navbar.html">
+
+</div>
+
+<div class="container">
+    <div id="main" class="jumbotron m-2 p-2">
+        <a class="nav-link" th:if="${user != null}" th:href="@{/admin/user}">Back</a>
+        <a class="nav-link" th:if="${user == null}" th:href="@{/admin}">Back</a>
+        <div class="badge badge-danger" th:if="${error}" th:text="${error}"></div>
+        <div class="badge badge-info" th:if="${msg}" th:text="${msg}"></div>
+
+        <div id="messageBox">
+
+        </div>
+
+        <div th:if="${user != null}">
+            <h2>User overview form</h2>
+            <div class="col-sm-10 form-horizontal">
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <label for="idShow" class="col-sm-10 control-label">ID</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control bg-light text-muted" id="idShow" disabled
+                                   th:value="${user.id}">
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="usernameShow" class="col-sm-10 control-label">Username</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control bg-light text-muted" id="usernameShow" disabled
+                                   th:value="${user.username}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <label for="role" class="col-sm-10 control-label">Role</label>
+                        <form class="input-group mb-3 col-sm-10"
+                              th:action="@{/admin/user/{id}(id=${user.id})}"
+                              th:method="PUT">
+                            <select class="form-control" id="role" name="role">
+                                <option th:text="${user.getRole()}" th:value="${user.getRole()}"></option>
+                                <option th:each="item : ${roles}"
+                                        th:if="${!item.equals(user.getRole())}"
+                                        th:text="${item}"
+                                        th:value="${item}"></option>
+                            </select>
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-primary"
+                                        th:text="'Change role'"></button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="cartShow" class="col-sm-10 control-label">Cart ID</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control bg-light text-muted" id="cartShow" disabled
+                                   th:value="${user.cart.id}">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <label for="createDateShow" class="col-sm-10 control-label">Register date</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control bg-light text-muted" id="createDateShow" disabled
+                                   th:value="${user.registeredAt}">
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="lastAccessDateShow" class="col-sm-10 control-label">Last access date</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control bg-light text-muted" id="lastAccessDateShow" disabled
+                                   th:value="${user.accessedAt}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <label for="registerIpShow" class="col-sm-10 control-label">Register IP</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control bg-light text-muted" id="registerIpShow" disabled
+                                   th:value="${user.registrationIp}">
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="lastIpShow" class="col-sm-10 control-label">Last IP</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control bg-light text-muted" id="lastIpShow" disabled
+                                   th:value="${user.lastIp}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="enabledShow" class="col-sm-11 control-label">Account enabled</label>
+                    <form class="input-group mb-3 col-sm-11" th:action="@{/admin/user/{id}(id=${user.id})}"
+                          th:method="PATCH">
+
+                        <input type="text" class="form-control bg-light text-muted" id="enabledShow" disabled
+                               th:value="${user.enabled ? 'Yes' : 'No'}">
+
+                        <input type="hidden" th:value="${!user.enabled}" name="enabled">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-warning"
+                                    th:text="${user.enabled ? 'Disable account' : 'Enable account'}"></button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="input-group mb-3 col-sm-11">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><strong>Email address:</strong></span>
+                    </div>
+                    <input type="text" class="form-control bg-light text-dark" th:value="${user.email}"
+                           disabled aria-label="Email" id="emailShow">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-info fas fa-edit"
+                                type="button" id="changeEmail"
+                                data-toggle="modal" data-target="#emailChangeModal"></button>
+                    </div>
+
+                </div>
+                <h3>Manual email verification form</h3>
+                <form class="col-sm-10 form-horizontal" th:action="@{/admin/user/{id}(id=${user.id})}"
+                      th:method="POST">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-secondary"
+                                th:text="'Verify user\'s email if needed'"></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <div th:if="${userPage != null}">
+            <h3>User select form</h3>
+            <div class="col-sm-10 form-horizontal">
+                <label for="userSelect" class="col-sm-10 control-label">User</label>
+                <div class="input-group mb-3 col-sm-11">
+                    <select class="custom-select" required id="userSelect">
+
+                    </select>
+                    <div class="input-group-append">
+                        <button type="button" id="searchBySelect" class="btn btn-primary"
+                                th:text="'View selected user'"></button>
+                    </div>
+                </div>
+            </div>
+            <h3>User search form</h3>
+            <div class="col-sm-10 form-horizontal">
+                <label for="userSearchId" class="col-sm-10 control-label">User ID</label>
+                <div class="input-group mb-3 col-sm-11">
+                    <input type="number" class="form-control" required id="userSearchId">
+                    <div class="input-group-append">
+                        <button type="button" id="searchById" class="btn btn-primary"
+                                th:text="'Search by ID'"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${userPage.content.size >= 10 && userPage.totalPages > 1}">
+                <h4>Page</h4>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <li class="page-item"
+                            th:each="pageNumber : ${pageNumbers}">
+                            <a th:href="@{/admin/user(size=${userPage.size}, page=${pageNumber})}"
+                               th:text="${pageNumber}"
+                               th:class="${pageNumber==userPage.number + 1} ? 'bg-light page-link' : 'page-link'"></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <table th:if="${userPage.content.size > 0}" class="table">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Register date</th>
+                    <th>Last access date</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${userPage.content}">
+                    <td><a th:href="@{/admin/user/{id}(id=${user.id})}"
+                           th:text="${user.username} + '(' + ${user.id} + ')'"></a></td>
+                    <td th:text="${user.email}"></td>
+                    <td th:text="${user.role}"></td>
+                    <td th:text="${user.registeredAt}"></td>
+                    <td th:text="${user.accessedAt}"></td>
+                </tr>
+                </tbody>
+            </table>
+            <div th:if="${userPage.totalPages > 1}">
+                <h4>Page</h4>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <li class="page-item"
+                            th:each="pageNumber : ${pageNumbers}">
+                            <a th:if="${user == null}"
+                               th:href="@{/admin/user(size=${userPage.size}, page=${pageNumber})}"
+                               th:text="${pageNumber}"
+                               th:class="${pageNumber==userPage.number + 1} ? 'bg-light page-link' : 'page-link'"></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Modal form for changing email -->
+        <div class="modal" id="emailChangeModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Email change</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="changeEmailInput" class="col-sm-6 control-label">New email</label>
+                            <div class="col-sm-8">
+                                <input type="email" class="form-control" id="changeEmailInput" name="newEmail">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" id="emailChangeButton" data-dismiss="modal">Confirm</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div th:include="/footer.html"></div>
+
+</body>
+</html>

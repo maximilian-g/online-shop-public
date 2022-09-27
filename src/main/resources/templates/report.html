@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Report page</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" th:href="@{/style/bootstrap.min.css}">
+
+    <!-- jQuery library -->
+    <script th:src="@{/js/lib/jquery.min.js}" type="text/javascript"></script>
+
+    <!-- Popper JS -->
+    <script th:src="@{/js/lib/popper.min.js}" type="text/javascript"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script th:src="@{/js/lib/bootstrap.min.js}" type="text/javascript"></script>
+    <script>
+        let currentPage = "report";
+        let currentPageText = "Report page";
+    </script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var isAuthenticated = /*[[${auth}]]*/ 'false';
+        console.log("isAuthenticated = " + isAuthenticated);
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+<div th:include="/navbar.html">
+
+</div>
+<div class="container">
+    <div id="main" class="jumbotron my-3 p-3">
+        <a class="nav-link" th:href="@{/reports}">Back</a>
+
+        <div th:if="${report != null}">
+            <div class="table-responsive-md">
+
+                <h4 th:text="${report.getReportName()}" class="mt-3 mb-3"></h4>
+
+                <ul th:if="${!report.getBeforeGrid().isEmpty()}"
+                    class="list-group mt-2 mb-2">
+                    <li class="list-group-item"
+                        th:each="str : ${report.getBeforeGrid()}"
+                        th:text="${str}"></li>
+                </ul>
+
+                <table class="table" th:if="${!report.getMainGrid().getRows().isEmpty()}">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th th:each="str : ${report.getMainGrid().getHeaders()}"
+                            th:text="${str}"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="row : ${report.getMainGrid().getRows()}">
+                        <td th:each="cell : ${row}">
+                            <p style="display: inline"
+                               th:text="${cell.getValue().startsWith('-') ? cell.getValue() : ('+' + cell.getValue())}"
+                               th:if="${cell.getTypeStr().equals('DIFFERENCE')}"
+                               th:class="${cell.getValue().contains('-') ? 'badge badge-danger' : 'badge badge-success'}"></p>
+                            <p style="display: inline"
+                               th:text="${cell.getValue()}"
+                               th:if="${!cell.getTypeStr().equals('DIFFERENCE')}"></p>
+                            <span th:if="${cell.getTypeStr().equals('MONEY')}" class='fas fa-dollar-sign'></span>
+
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-sm-10 form-horizontal" th:if="${!report.getExportOptions().isEmpty()}">
+                <div class="form-group mt-3">
+                    <a th:each="exportOption : ${report.getExportOptions()}"
+                       th:href="'/api/v1/reports' + ${exportOption.getLink()}"
+                       th:text="${exportOption.getExportType().getDescription()}"
+                       class="btn btn-success"></a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div th:include="/footer.html"></div>
+
+</body>
+</html>
